@@ -1,4 +1,4 @@
-import { db } from "../dbStrategy/mongodb";
+import { db } from "../dbStrategy/mongodb.js";
 
 export async function createBook (_,res) {
     try {

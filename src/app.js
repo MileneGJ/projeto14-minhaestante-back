@@ -1,9 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import authRouters from './routers/authRouters.js'
-import bookRouters from './routers/bookRouters.js'
-
+import authRouters from './routers/authRouters.js';
+import bookRouters from './routers/bookRouters.js';
 
 dotenv.config()
 

@@ -16,6 +16,8 @@ export async function signUp(req, res) {
         ...user,
         password: passwordHash,
         passConfirm: passConfirmHash,
+        favorites:[],
+        bought:[]
       });
       res.sendStatus(201);
     }
@@ -50,6 +52,8 @@ export async function signIn(req, res) {
           name: user.name,
           userId: user._id,
           email: user.email,
+          favorites: user.favorites,
+          bought: user.bought
         });
     } else {
       return res.status(401).send("Email ou senha incorretos");

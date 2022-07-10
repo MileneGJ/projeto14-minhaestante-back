@@ -9,5 +9,6 @@ export const newBookSchema = joi.object({
     genre:joi.string().required(),
     image:joi.string().uri(),
     publisher:joi.string(),
-    pages:joi.number()
+    pages:joi.number(),
+    userID:joi.string()
 })

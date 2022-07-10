@@ -66,15 +66,14 @@ export async function signIn(req, res) {
 
 export async function deleteUser(req, res) {
   const { id } = req.params;
-  const user = req.body;
+  const { password } = req.headers;
   const userById = await db
     .collection("users")
     .findOne({ _id: new objectId(id) });
-
   if (!userById) {
     res.sendStatus(404);
     return;
-  } else if (bcrypt.compareSync(user.password, userById.password)) {
+  } else if (bcrypt.compareSync(password, userById.password)) {
     try {
       await db.collection("users").deleteOne({ _id: new objectId(id) });
       res.sendStatus(204);

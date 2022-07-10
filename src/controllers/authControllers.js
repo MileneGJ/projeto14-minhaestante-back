@@ -40,9 +40,17 @@ export async function signIn(req, res) {
         userId: user._id,
         name: user.name,
         token,
+        email: user.email,
       });
 
-      res.status(202).send({ token: token, name: user.name, userId: user._id });
+      res
+        .status(202)
+        .send({
+          token: token,
+          name: user.name,
+          userId: user._id,
+          email: user.email,
+        });
     } else {
       return res.status(401).send("Email ou senha incorretos");
     }
@@ -70,9 +78,8 @@ export async function deleteUser(req, res) {
       console.log(error);
       res.sendStatus(500);
     }
-  }
-  else{
-    return res.sendStatus(401)
+  } else {
+    return res.sendStatus(401);
   }
 }
 

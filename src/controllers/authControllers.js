@@ -17,6 +17,7 @@ export async function signUp(req, res) {
         password: passwordHash,
         passConfirm: passConfirmHash,
         favorites:[],
+        cart:[],
         bought:[]
       });
       res.sendStatus(201);
@@ -53,6 +54,7 @@ export async function signIn(req, res) {
           userId: user._id,
           email: user.email,
           favorites: user.favorites,
+          cart: user.cart,
           bought: user.bought
         });
     } else {
@@ -126,5 +128,39 @@ export async function putUser(req, res) {
     return res
       .status(400)
       .send("Não foi possível atualizar o usuário, verifique os dados");
+  }
+}
+
+
+export async function addToUserCollection (req, res) {
+  const {field, id} = req.params;
+  let update
+  try {
+    const currentUser = await db.collection("users").findOne({_id:id})
+        switch (field) {
+            case "favorites":
+                update = { favorites: [...currentUser.favorites,res.locals.newBook] }
+                break;
+            case "cart":
+                update = { cart: [...currentUser.cart,res.locals.newBook] }
+                break;
+            case "bought":
+                update = { bought: [...currentUser.bought,res.locals.newBook] }
+                break;
+            default:
+                break;
+        }
+    await db.collection("users").updateOne(
+      {
+        _id: new objectId(id)
+      }, {
+        $set:{
+          update
+        }
+      }
+    ) 
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);    
   }
 }

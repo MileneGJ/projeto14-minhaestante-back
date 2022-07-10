@@ -16,9 +16,9 @@ export async function signUp(req, res) {
         ...user,
         password: passwordHash,
         passConfirm: passConfirmHash,
-        favorites:[],
-        cart:[],
-        bought:[]
+        favorites: [],
+        cart: [],
+        bought: []
       });
       res.sendStatus(201);
     }
@@ -132,35 +132,83 @@ export async function putUser(req, res) {
 }
 
 
-export async function addToUserCollection (req, res) {
-  const {field, id} = req.params;
+export async function addToUserCollection(req, res) {
+  const { field, id } = req.params;
   let update
   try {
-    const currentUser = await db.collection("users").findOne({_id:id})
-        switch (field) {
-            case "favorites":
-                update = { favorites: [...currentUser.favorites,res.locals.newBook] }
-                break;
-            case "cart":
-                update = { cart: [...currentUser.cart,res.locals.newBook] }
-                break;
-            case "bought":
-                update = { bought: [...currentUser.bought,res.locals.newBook] }
-                break;
-            default:
-                break;
+    const currentUser = await db.collection("users").findOne({ _id: new objectId(id) })
+    switch (field) {
+      case "favorites":
+        if (currentUser.favorites.length > 0) {
+          update = [...currentUser.favorites, res.locals.newBook]
+        } else {
+          update = [res.locals.newBook]
         }
+        await db.collection("users").updateOne(
+          {
+            _id: new objectId(id)
+          }, {
+          $set: {
+            favorites: update
+          }
+        }
+        )
+        break;
+      case "cart":
+        if (currentUser.cart.length > 0) {
+          update = [...currentUser.cart, res.locals.newBook]
+        } else {
+          update = [res.locals.newBook]
+        }
+        await db.collection("users").updateOne(
+          {
+            _id: new objectId(id)
+          }, {
+          $set: {
+            cart: update
+          }
+        }
+        )
+        break;
+      case "bought":
+        if (currentUser.bought.length > 0) {
+          update = [...currentUser.bought, res.locals.newBook]
+        } else {
+          update = [res.locals.newBook]
+        }
+        await db.collection("users").updateOne(
+          {
+            _id: new objectId(id)
+          }, {
+          $set: {
+            bought: update
+          }
+        }
+        )
+        break;
+      default:
+        break;
+    }
     await db.collection("users").updateOne(
       {
         _id: new objectId(id)
       }, {
-        $set:{
-          update
-        }
+      $set: {
+        update
       }
-    ) 
+    }
+    )
+    const updatedUser = await db.collection("users").findOne({ _id: new objectId(id) })
+    return res.status(200).send({
+      token: res.locals.token,
+      name: updatedUser.name,
+      userId: updatedUser._id,
+      email: updatedUser.email,
+      favorites: updatedUser.favorites,
+      cart: updatedUser.cart,
+      bought: updatedUser.bought});
   } catch (error) {
     console.log(error);
-    res.sendStatus(500);    
+    res.sendStatus(500);
   }
 }

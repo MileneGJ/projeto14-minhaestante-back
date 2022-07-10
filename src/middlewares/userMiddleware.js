@@ -1,6 +1,6 @@
 import signUpSchema from "../schemas/signUpSchema.js";
 import signInSchema from "../schemas/signInSchema.js";
-import { validateNewBook } from "./bookMiddlewares.js";
+import { newBookSchema } from "../schemas/bookSchemas.js";
 
 export function signUpMiddleware(req, res, next) {
   const validation = signUpSchema.validate(req.body);
@@ -33,5 +33,14 @@ export function verifyBookEntry (req,res,next){
     pages:req.body.pages,
     userID:req.body.userID
   }
-  validateNewBook(formatToValidate,res,next);
+  
+  const validation = newBookSchema.validate(formatToValidate);
+  if (validation.error) {
+    console.log(validation.error.details[0].message)
+      return res.status(422).send(validation.error.details[0].message)
+  } else {
+      res.locals.newBook = req.body;
+      next()
+  }
+
 }

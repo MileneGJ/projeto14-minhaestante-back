@@ -1,7 +1,9 @@
 import { db } from "../dbStrategy/mongodb.js";
+
 export async function tokenVerify(req, res, next) {
     const {authorization} = req.headers;
     const token = authorization?.replace("Bearer ", "");
+    res.locals.token = token
       if (!token) {
       return res.sendStatus(401);
       }

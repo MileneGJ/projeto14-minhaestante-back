@@ -4,7 +4,7 @@ import { db } from '../dbStrategy/mongodb.js'
 export function validateNewBook(req, res, next) {
     const validation = newBookSchema.validate(req.body);
     if (validation.error) {
-        return res.status(422).send(validation.error.details.message)
+        return res.status(422).send(validation.error.details[0].message)
     } else {
         res.locals.newBook = req.body;
         next()

@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { db } from "../dbStrategy/mongodb.js";
+import { db, objectId } from "../dbStrategy/mongodb.js";
 import { v4 as uuid } from "uuid";
 
 export async function signUp(req, res) {
@@ -49,5 +49,72 @@ export async function signIn(req, res) {
   } catch (error) {
     console.log(error);
     res.sendStatus(500);
+  }
+}
+
+export async function deleteUser(req, res) {
+  const { id } = req.params;
+  const user = req.body;
+  const userById = await db
+    .collection("users")
+    .findOne({ _id: new objectId(id) });
+
+  if (!userById) {
+    res.sendStatus(404);
+    return;
+  } else if (bcrypt.compareSync(user.password, userById.password)) {
+    try {
+      await db.collection("users").deleteOne({ _id: new objectId(id) });
+      res.sendStatus(204);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+  else{
+    return res.sendStatus(401)
+  }
+}
+
+export async function putUser(req, res) {
+  const { id } = req.params;
+  const user = req.body;
+
+  const passwordHash = bcrypt.hashSync(user.password, 10);
+  const passConfirmHash = bcrypt.hashSync(user.passConfirm, 10);
+  const userById = await db
+    .collection("users")
+    .findOne({ _id: new objectId(id) });
+
+  if (!userById) {
+    res.sendStatus(404);
+    return;
+  } else if (
+    user.password === user.passConfirm &&
+    bcrypt.compareSync(user.oldPassword, userById.password)
+  ) {
+    try {
+      await db.collection("users").updateOne(
+        {
+          _id: new objectId(id),
+        },
+        {
+          $set: {
+            name: user.name,
+            email: user.email,
+            password: passwordHash,
+            passConfirm: passConfirmHash,
+          },
+        }
+      );
+      res.sendStatus(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  } else {
+    return res
+      .status(400)
+      .send("Não foi possível atualizar o usuário, verifique os dados");
   }
 }

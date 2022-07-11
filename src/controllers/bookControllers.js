@@ -23,3 +23,14 @@ export async function listAllBooks(_, res) {
         }
     }
 }
+
+export async function listUserBooks (req,res) {
+    const { userID } = req.params;
+    try {
+        const searchOutput = await db.collection("books").find({userID}).toArray()
+        return res.status(200).send(searchOutput)
+    } catch (error) {
+        console.log(error)
+        return res.sendStatus(400)
+    }
+}

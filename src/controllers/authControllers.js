@@ -131,13 +131,38 @@ export async function putUser(req, res) {
   }
 }
 
+export async function sendListFromCollection(req, res) {
+  const { field, id } = req.params;
+
+  try {
+    const currentUser = await db.collection("users").findOne({ _id: new objectId(id) })
+
+    switch (field) {
+      case "favorites":
+        return res.status(200).send(currentUser.favorites)
+      case "cart":
+        return res.status(200).send(currentUser.cart)
+      case "bought":
+        return res.status(200).send(currentUser.bought)
+      default:
+        break;
+    }
+
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
+}
 
 export async function addToUserCollection(req, res) {
   const { field, id } = req.params;
   let update
+
   try {
     const currentUser = await db.collection("users").findOne({ _id: new objectId(id) })
+
     switch (field) {
+
       case "favorites":
         if (currentUser.favorites.length > 0) {
           update = [...currentUser.favorites, res.locals.newBook]
@@ -154,6 +179,7 @@ export async function addToUserCollection(req, res) {
         }
         )
         break;
+
       case "cart":
         if (currentUser.cart.length > 0) {
           update = [...currentUser.cart, res.locals.newBook]
@@ -170,18 +196,61 @@ export async function addToUserCollection(req, res) {
         }
         )
         break;
+
       case "bought":
-        if (currentUser.bought.length > 0) {
-          update = [...currentUser.bought, res.locals.newBook]
+
+        let boughtBook
+        if (res.locals.newBook.length) {
+          boughtBook = [];
+          for (let i = 0; i < res.locals.newBook.length; i++) {
+            await db.collection("books").updateOne(
+              {
+                _id: new objectId(res.locals.newBook[i]._id)
+              }, {
+              $set: {
+                status: 'Comprado'
+              }
+            })
+            boughtBook.push(
+              await db.collection("books").
+                findOne({ _id: new objectId(res.locals.newBook[i]._id) })
+            )
+          }
+
+          if (currentUser.bought.length > 0) {
+            update = [...currentUser.bought, ...boughtBook]
+          } else {
+            update = [...boughtBook]
+          }
+          console.log(update)
         } else {
-          update = [res.locals.newBook]
+
+          await db.collection("books").updateOne(
+            {
+              _id: new objectId(res.locals.newBook._id)
+            }, {
+            $set: {
+              status: 'Comprado'
+            }
+          })
+
+          boughtBook = await db.collection("books").findOne({ _id: new objectId(res.locals.newBook._id) })
+
+          if (currentUser.bought.length > 0) {
+            update = [...currentUser.bought, boughtBook]
+          } else {
+            update = [boughtBook]
+          }
+
         }
+
         await db.collection("users").updateOne(
           {
             _id: new objectId(id)
           }, {
           $set: {
-            bought: update
+            bought: update,
+            cart: []
           }
         }
         )
@@ -189,15 +258,6 @@ export async function addToUserCollection(req, res) {
       default:
         break;
     }
-    await db.collection("users").updateOne(
-      {
-        _id: new objectId(id)
-      }, {
-      $set: {
-        update
-      }
-    }
-    )
     const updatedUser = await db.collection("users").findOne({ _id: new objectId(id) })
     return res.status(200).send({
       token: res.locals.token,
@@ -206,7 +266,8 @@ export async function addToUserCollection(req, res) {
       email: updatedUser.email,
       favorites: updatedUser.favorites,
       cart: updatedUser.cart,
-      bought: updatedUser.bought});
+      bought: updatedUser.bought
+    });
   } catch (error) {
     console.log(error);
     res.sendStatus(500);

@@ -10,5 +10,6 @@ export const newBookSchema = joi.object({
     image:joi.string().uri(),
     publisher:joi.string(),
     pages:joi.number(),
-    userID:joi.string()
+    userID:joi.string(),
+    status:joi.string().valid('A-venda','Comprado')
 })

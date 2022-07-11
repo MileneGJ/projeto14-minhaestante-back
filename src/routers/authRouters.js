@@ -4,7 +4,8 @@ import {
   signUp,
   deleteUser,
   putUser,
-  addToUserCollection
+  addToUserCollection,
+  sendListFromCollection
 } from "../controllers/authControllers.js";
 import {
   signInMiddleware,
@@ -17,6 +18,7 @@ const router = Router();
 router.post("/sign-up", signUpMiddleware, signUp);
 router.post("/sign-in", signInMiddleware, signIn);
 router.post("/users/:field/:id", tokenVerify, verifyBookEntry, addToUserCollection)
+router.get("/users/:field/:id", tokenVerify, sendListFromCollection)
 router.delete("/users/:id", tokenVerify, deleteUser);
 router.put("/users/:id", tokenVerify, putUser);
 export default router;

@@ -154,7 +154,7 @@ export async function sendListFromCollection(req, res) {
 }
 export async function deleteFromCart(req, res) {
   const { field, id } = req.params;
-
+  console.log(req.body);
   try {
     const currentUser = await db
       .collection("users")
@@ -163,7 +163,7 @@ export async function deleteFromCart(req, res) {
     switch (field) {
       case "favorites":
         const newFavorite = currentUser.favorites.filter(
-          (b) => b._id !== new objectId(req.body)
+          (b) => b._id !== new objectId(req.body.bookId)
         );
         await db.collection("users").updateOne(
           {
@@ -176,7 +176,7 @@ export async function deleteFromCart(req, res) {
         return res.status(200).send(newFavorite);
       case "cart":
         const newCart = currentUser.cart.filter(
-          (b) => b._id !== new objectId(req.body)
+          (b) => b._id !== new objectId(req.body.bookId)
         );
         await db.collection("users").updateOne(
           {
